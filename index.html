@@ -218,7 +218,14 @@
           <button class="btn-ghost" id="btnOauth" style="font-size:11.5px; padding:8px 12px;">Prefiero iniciar sesión con mi correo Deriv (opcional)</button>
           <small class="hint">Solo funciona si ya publicaste este bot en una URL propia (ej. GitHub Pages) y registraste esa URL como redirect en tu app de developers.deriv.com. Si no has hecho eso, usa el token de arriba — es más simple.</small>
         </div>
-        <input type="hidden" id="appId" value="1089">
+        <div style="margin-top:10px;">
+          <button class="btn-ghost" id="btnToggleAdvanced" style="font-size:11px; padding:6px 10px;">⚙ Avanzado: usar mi propio App ID</button>
+          <div class="field" id="advancedAppId" style="display:none; margin-top:10px;">
+            <label>App ID propio (numérico)</label>
+            <input type="text" id="appId" value="1089" placeholder="1089">
+            <small class="hint">Regístralo gratis en <a href="https://developers.deriv.com/" target="_blank">developers.deriv.com</a> → Dashboard → Application Manager → Register Application. Solo necesitas esto si el App ID público 1089 te sigue dando error de autorización con un token que confirmaste válido en el API Explorer.</small>
+          </div>
+        </div>
       </div>
 
       <div class="panel">
@@ -500,12 +507,21 @@
     window.location.href = `https://oauth.deriv.com/oauth2/authorize?app_id=${appId}`;
   });
 
+  $('btnToggleAdvanced').addEventListener('click', () => {
+    const box = $('advancedAppId');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  });
+
   // ---- Connect ----
   $('btnConnect').addEventListener('click', () => {
-    const appId = '1089';
+    const appId = ($('appId').value || '1089').trim();
     const token = $('apiToken').value.replace(/\s+/g, ''); // strip ALL whitespace, incl. hidden/copy-paste artifacts
     if (!token) { log('Ingresa tu API Token de Deriv primero.', 't-err'); return; }
-    log(`Token leído: ${token.length} caracteres. Conectando…`);
+    if (!/^\d+$/.test(appId)) {
+      log(`El App ID "${appId}" no es válido — debe ser numérico. Revisa el campo en Avanzado.`, 't-err');
+      return;
+    }
+    log(`Token leído: ${token.length} caracteres. Conectando con App ID ${appId}…`);
     ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${appId}`);
 
     const authTimeout = setTimeout(() => {
