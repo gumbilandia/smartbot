@@ -503,11 +503,9 @@
   // ---- Connect ----
   $('btnConnect').addEventListener('click', () => {
     const appId = '1089';
-    const token = $('apiToken').value.trim();
+    const token = $('apiToken').value.replace(/\s+/g, ''); // strip ALL whitespace, incl. hidden/copy-paste artifacts
     if (!token) { log('Ingresa tu API Token de Deriv primero.', 't-err'); return; }
-
-    setStatus('', 'Conectando…');
-    log(`Abriendo conexión…`);
+    log(`Token leído: ${token.length} caracteres. Conectando…`);
     ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${appId}`);
 
     const authTimeout = setTimeout(() => {
@@ -546,7 +544,7 @@
       const msg = JSON.parse(evt.data);
 
       if (msg.error) {
-        log(`Error API: ${msg.error.message}`, 't-err');
+        log(`Error API: [${msg.error.code}] ${msg.error.message}`, 't-err');
         if (msg.msg_type === 'authorize') {
           clearTimeout(authTimeout);
           setStatus('err', 'Token inválido o rechazado');
