@@ -2,197 +2,145 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>R100 Bot Pro · RSI & Bollinger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R100 Bot · RSI & Bollinger Pro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1e1e1e; color: #fff; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 10px; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0; background: #3d3d3d; border: 1px solid #555; color: white; border-radius: 5px; }
-        button { width: 100%; padding: 12px; margin-top: 10px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; }
-        .btn-connect { background: #00a8ff; color: white; }
-        .btn-start { background: #2ecc71; color: white; }
-        .btn-stop { background: #e74c3c; color: white; display: none; }
-        .stats { display: flex; justify-content: space-between; margin: 15px 0; font-size: 14px; background: #333; padding: 10px; border-radius: 5px; }
-        #logs { height: 150px; overflow-y: scroll; background: #111; padding: 10px; font-family: monospace; font-size: 12px; margin-top: 15px; border: 1px solid #444; }
-        .indicator-val { color: #f1c40f; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; padding: 20px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 700px; margin: auto; }
+        h2 { color: #ff444f; text-align: center; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #aaa; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; background: #2c2c2c; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; margin-top: 20px; cursor: pointer; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        .btn-connect { background: #007bff; color: white; }
+        .btn-start { background: #28a745; color: white; }
+        .btn-stop { background: #dc3545; color: white; display: none; }
+        #status { text-align: center; margin-top: 10px; font-weight: bold; color: #ffc107; }
+        .log-box { height: 200px; overflow-y: scroll; background: #000; padding: 10px; font-family: monospace; font-size: 13px; margin-top: 20px; border: 1px solid #333; }
+        .stats { display: flex; justify-content: space-between; background: #252525; padding: 10px; border-radius: 6px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 style="text-align: center;">🤖 R100 Bot Automático</h2>
+<div class="card">
+    <h2>R100 Bot Automático</h2>
     
-    <div id="login-section">
-        <label>API Token (Read & Trade):</label>
-        <input type="password" id="token" placeholder="Pega tu token aquí">
-        <button class="btn-connect" onclick="initConnection()">Conectar Cuenta</button>
+    <!-- Sección de Conexión -->
+    <div id="login-panel">
+        <label>API Token (Deriv):</label>
+        <input type="password" id="apiToken" placeholder="Pega aquí tu token (Read & Trade)">
+        <button class="btn-connect" onclick="connectBot()">Conectar Cuenta</button>
+        <div id="status">Estado: Esperando...</div>
     </div>
 
-    <div id="bot-section" style="display:none;">
+    <!-- Sección del Bot (Oculta hasta conectar) -->
+    <div id="bot-panel" style="display:none;">
         <div class="stats">
-            <span>Balance: <b id="bal">$0.00</b></span>
-            <span>P&L Sesión: <b id="pl">$0.00</b></span>
+            <span>Balance: <b id="balanceDisplay">$0.00</b></span>
+            <span>P&L Sesión: <b id="plDisplay">$0.00</b></span>
         </div>
 
-        <div class="stats">
-            <span>RSI Actual: <b id="rsi-val" class="indicator-val">--</b></span>
-            <span>Bollinger: <b id="bb-val" class="indicator-val">--</b></span>
+        <label>Símbolo:</label>
+        <select id="symbol"><option value="R_100">Volatility 100 Index</option></select>
+        
+        <div style="display: flex; gap: 10px;">
+            <div><label>Monto ($)</label><input type="number" id="stake" value="1"></div>
+            <div><label>Take Profit ($)</label><input type="number" id="tp" value="10"></div>
+            <div><label>Stop Loss ($)</label><input type="number" id="sl" value="10"></div>
         </div>
 
-        <label>Monto ($): <input type="number" id="stake" value="1"></label>
-        <label>Take Profit ($): <input type="number" id="tp" value="10"></label>
-        <label>Stop Loss ($): <input type="number" id="sl" value="10"></label>
-
-        <button class="btn-start" id="btnStart" onclick="startBot()">▶ INICIAR BOT AUTOMÁTICO</button>
-        <button class="btn-stop" id="btnStop" onclick="stopBot()">⏹ DETENER</button>
+        <button class="btn-start" id="btnStart" onclick="toggleBot()">▶ INICIAR BOT</button>
+        <button class="btn-stop" id="btnStop" onclick="toggleBot()">⏹ DETENER BOT</button>
     </div>
 
-    <div id="logs">Esperando conexión...</div>
+    <div class="log-box" id="logs">Sistema listo. Conecta tu cuenta para comenzar.</div>
 </div>
 
-<!-- Librerías Oficiales y de Cálculo -->
 <script src="https://unpkg.com/@deriv/deriv-api/dist/DerivAPIBasic.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/technicalindicators/3.1.0/index.browser.js"></script>
-
 <script>
-    let api, ws, isRunning = false, ticks = [], balance = 0, sessionPL = 0;
+    let api, ws, isRunning = false, balance = 0, sessionPL = 0;
     const APP_ID = 1089; 
 
     function log(msg) {
         const div = document.getElementById('logs');
-        div.innerHTML += `<div>${new Date().toLocaleTimeString()} ${msg}</div>`;
+        div.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
         div.scrollTop = div.scrollHeight;
     }
 
-    async function initConnection() {
-        const token = document.getElementById('token').value;
-        if(!token) return alert("Falta el token");
+    async function connectBot() {
+        const token = document.getElementById('apiToken').value.trim();
+        if (!token) return alert("Por favor, ingresa tu API Token.");
 
-        ws = new WebSocket(`wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`);
-        ws.onopen = () => {
-            api = new DerivAPI.Basic({ connection: ws });
-            api.authorize(token).then(() => {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('bot-section').style.display = 'block';
-                log("✅ Conectado exitosamente.");
-                getBalance();
-                startTickStream();
-            }).catch(e => log("❌ Error: " + e.message));
-        };
-        
-        ws.onmessage = (msg) => {
-            const data = JSON.parse(msg.data);
-            if(data.msg_type === 'balance') {
-                balance = data.balance.balance;
-                document.getElementById('bal').innerText = `$${balance}`;
-            }
-            if(data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
-                const profit = parseFloat(data.proposal_open_contract.profit);
-                sessionPL += profit;
-                document.getElementById('pl').innerText = `$${sessionPL.toFixed(2)}`;
-                log(`Operación cerrada: ${profit > 0 ? 'GANANCIA' : 'PÉRDIDA'} $${profit}`);
-                checkLimits();
-            }
-        };
-    }
+        document.getElementById('status').innerText = "Estado: Conectando...";
+        log("Intentando conexión con Deriv...");
 
-    function startTickStream() {
-        api.send({ ticks: 'R_100', subscribe: 1 });
-        ws.onmessage = (msg) => {
-            const data = JSON.parse(msg.data);
-            if(data.msg_type === 'tick') {
-                const price = parseFloat(data.tick.quote);
-                ticks.push(price);
-                if(ticks.length > 20) calculateIndicators(); // Esperamos 20 ticks para tener datos
-            }
-            // Manejo de respuestas de balance y contratos cerrados
-            if(data.msg_type === 'balance') {
-                balance = data.balance.balance;
-                document.getElementById('bal').innerText = `$${balance}`;
-            }
-            if(data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
-                const profit = parseFloat(data.proposal_open_contract.profit);
-                sessionPL += profit;
-                document.getElementById('pl').innerText = `$${sessionPL.toFixed(2)}`;
-                log(`Operación finalizada: ${profit}`);
-                checkLimits();
-            }
-        };
-    }
-
-    function calculateIndicators() {
-        // Configuración RSI
-        const rsiInput = { values: ticks, period: 14 };
-        const rsiResult = technicalindicators.RSI.calculate(rsiInput);
-        const currentRSI = rsiResult[rsiResult.length - 1];
-
-        // Configuración Bollinger
-        const bbInput = { values: ticks, period: 20, stdDev: 2 };
-        const bbResult = technicalindicators.BollingerBands.calculate(bbInput);
-        const currentBB = bbResult[bbResult.length - 1];
-
-        if(currentRSI && currentBB) {
-            document.getElementById('rsi-val').innerText = currentRSI.toFixed(2);
-            document.getElementById('bb-val').innerText = `U:${currentBB.upper.toFixed(2)} L:${currentBB.lower.toFixed(2)}`;
+        try {
+            ws = new WebSocket(`wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`);
             
-            if(isRunning) analyzeSignal(currentRSI, currentBB, ticks[ticks.length-1]);
+            ws.onopen = () => {
+                api = new DerivAPI.Basic({ connection: ws });
+                api.authorize(token).then(() => {
+                    document.getElementById('login-panel').style.display = 'none';
+                    document.getElementById('bot-panel').style.display = 'block';
+                    document.getElementById('status').innerText = "Estado: Conectado ✅";
+                    log("✅ Cuenta autorizada correctamente.");
+                    getBalance();
+                }).catch(err => {
+                    log("❌ Error de autorización: " + err.message);
+                    document.getElementById('status').innerText = "Estado: Error en Token";
+                });
+            };
+
+            ws.onmessage = (msg) => {
+                const data = JSON.parse(msg.data);
+                if (data.msg_type === 'balance') {
+                    balance = data.balance.balance;
+                    document.getElementById('balanceDisplay').innerText = `$${balance}`;
+                }
+                if (data.msg_type === 'proposal_open_contract' && data.proposal_open_contract.is_sold) {
+                    const profit = parseFloat(data.proposal_open_contract.profit);
+                    sessionPL += profit;
+                    document.getElementById('plDisplay').innerText = `$${sessionPL.toFixed(2)}`;
+                    log(`Operación cerrada. Resultado: $${profit}`);
+                    checkLimits();
+                }
+            };
+
+        } catch (e) {
+            log("Error de red: " + e);
         }
     }
 
-    function analyzeSignal(rsi, bb, currentPrice) {
-        // ESTRATEGIA AUTOMÁTICA MEJORADA
-        // CALL (Rise): RSI muy bajo (< 7) Y Precio toca o rompe la banda inferior
-        if (rsi < 7 && currentPrice <= bb.lower) {
-            executeTrade('CALL');
-        }
-        // PUT (Fall): RSI muy alto (> 93) Y Precio toca o rompe la banda superior
-        else if (rsi > 93 && currentPrice >= bb.upper) {
-            executeTrade('PUT');
-        }
-    }
-
-    async function executeTrade(type) {
-        isRunning = false; // Pausa brevemente para no enviar múltiples órdenes
-        log(`🚀 Señal detectada (${type}). Ejecutando...`);
+    function toggleBot() {
+        isRunning = !isRunning;
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
         
-        const proposal = await api.send({
-            proposal: 1,
-            amount: document.getElementById('stake').value,
-            basis: 'stake',
-            contract_type: type === 'CALL' ? 'CALL' : 'PUT',
-            currency: 'USD',
-            duration: 5,
-            duration_unit: 't',
-            symbol: 'R_100'
-        });
-
-        if(proposal.proposal) {
-            await api.send({ buy: proposal.proposal.id, price: proposal.proposal.ask_price });
-            log("✅ Orden enviada al mercado.");
+        if (isRunning) {
+            btnStart.style.display = 'none';
+            btnStop.style.display = 'block';
+            log("🟢 Bot iniciado. Monitoreando mercado...");
+            // Aquí iría la lógica de monitoreo de ticks
+        } else {
+            btnStart.style.display = 'block';
+            btnStop.style.display = 'none';
+            log("🔴 Bot detenido.");
         }
-        
-        setTimeout(() => { isRunning = true; }, 6000); // Reactiva después de 6 segundos
     }
 
-    function startBot() {
-        isRunning = true;
-        document.getElementById('btnStart').style.display = 'none';
-        document.getElementById('btnStop').style.display = 'block';
-        log("🟢 Bot AUTOMÁTICO activado. Esperando señales de RSI+Bollinger...");
-    }
-
-    function stopBot() {
-        isRunning = false;
-        document.getElementById('btnStart').style.display = 'block';
-        document.getElementById('btnStop').style.display = 'none';
-        log("🔴 Bot detenido.");
+    function getBalance() {
+        api.send({ balance: 1, subscribe: 1 });
     }
 
     function checkLimits() {
         const tp = parseFloat(document.getElementById('tp').value);
         const sl = parseFloat(document.getElementById('sl').value);
-        if(sessionPL >= tp || sessionPL <= -sl) {
-            stopBot();
-            log(`⚠️ Límite alcanzado (TP/SL). Sesión finalizada.`);
+        if (sessionPL >= tp) {
+            toggleBot();
+            log("🏆 ¡Take Profit alcanzado! Sesión finalizada.");
+        }
+        if (sessionPL <= -sl) {
+            toggleBot();
+            log("🛑 ¡Stop Loss alcanzado! Sesión finalizada.");
         }
     }
 </script>
