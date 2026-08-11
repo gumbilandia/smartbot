@@ -1,0 +1,2795 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bot Deriv SmartTrader Speed 100</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-2: #0f172a;
+      --panel: rgba(15, 23, 42, 0.76);
+      --panel-strong: rgba(15, 23, 42, 0.92);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(148, 163, 184, 0.32);
+      --text: #e5eefc;
+      --muted: #94a3b8;
+      --muted-2: #cbd5e1;
+      --primary: #38bdf8;
+      --primary-2: #8b5cf6;
+      --green: #22c55e;
+      --red: #ef4444;
+      --orange: #f97316;
+      --yellow: #f59e0b;
+      --shadow: 0 24px 90px rgba(0, 0, 0, 0.38);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.20), transparent 34%),
+        radial-gradient(circle at 88% 12%, rgba(139, 92, 246, 0.20), transparent 32%),
+        radial-gradient(circle at 52% 92%, rgba(34, 197, 94, 0.10), transparent 34%),
+        linear-gradient(135deg, #020617 0%, #07111f 48%, #111827 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 88%);
+      z-index: -2;
+    }
+
+    .bg-orb {
+      position: fixed;
+      width: 360px;
+      height: 360px;
+      border-radius: 999px;
+      filter: blur(90px);
+      opacity: 0.28;
+      pointer-events: none;
+      z-index: -1;
+      animation: floatOrb 12s ease-in-out infinite alternate;
+    }
+
+    .orb-one {
+      left: -120px;
+      top: 120px;
+      background: #38bdf8;
+    }
+
+    .orb-two {
+      right: -130px;
+      bottom: 80px;
+      background: #8b5cf6;
+      animation-delay: -4s;
+    }
+
+    @keyframes floatOrb {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(24px, -28px, 0) scale(1.08); }
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(2, 6, 23, 0.72);
+      backdrop-filter: blur(22px);
+    }
+
+    .nav-inner {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(139, 92, 246, 0.95)),
+        #0f172a;
+      box-shadow: 0 14px 34px rgba(56, 189, 248, 0.22);
+      font-size: 22px;
+      flex: 0 0 auto;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .container {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 26px 0 44px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+      gap: 18px;
+      margin: 18px 0;
+    }
+
+    .hero-card,
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+        var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .hero-card {
+      padding: 26px;
+    }
+
+    .hero-card::before,
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.16), transparent 34%);
+    }
+
+    .hero-card > *,
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      margin: 10px 0 14px;
+      max-width: 860px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #e0f2fe, #67e8f9 34%, #a78bfa 72%, #f0abfc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 850px;
+      color: var(--muted-2);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #67e8f9;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .hero-badges span,
+    .chart-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.62);
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .hero-badges span::before,
+    .chart-legend span::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    .safety {
+      background:
+        linear-gradient(180deg, rgba(34, 197, 94, 0.08), rgba(255, 255, 255, 0.03)),
+        var(--panel);
+    }
+
+    .mode-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .mode-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(34, 197, 94, 0.13);
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      font-size: 22px;
+      flex: 0 0 auto;
+    }
+
+    .mode-row strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .mode-row span:last-child {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .switch-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 54px 1fr;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+      padding: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 18px;
+      background: rgba(2, 6, 23, 0.34);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch-card input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch-ui {
+      position: relative;
+      width: 54px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(100, 116, 139, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      transition: 0.22s ease;
+    }
+
+    .switch-ui::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.32);
+      transition: 0.22s ease;
+    }
+
+    .switch-card input:checked + .switch-ui {
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      border-color: rgba(125, 211, 252, 0.42);
+    }
+
+    .switch-card.real input:checked + .switch-ui {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border-color: rgba(251, 113, 133, 0.45);
+    }
+
+    .switch-card input:checked + .switch-ui::after {
+      transform: translateX(24px);
+    }
+
+    .switch-card b {
+      display: block;
+      font-size: 14px;
+    }
+
+    .switch-card small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .disclaimer {
+      margin: 14px 0 0;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.09);
+      color: #fde68a;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      padding: 20px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .card-head h2 {
+      margin: 3px 0 0;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.20);
+      background: rgba(15, 23, 42, 0.58);
+      color: var(--muted-2);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.10);
+    }
+
+    .pill.connected {
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.25);
+    }
+
+    .pill.running {
+      color: #67e8f9;
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.26);
+    }
+
+    .pill.connecting {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .pill.warning {
+      color: #fde68a;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.28);
+    }
+
+    .pill.danger {
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.28);
+    }
+
+    .pill.neutral {
+      color: #cbd5e1;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      display: block;
+      margin: 0 0 7px;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid rgba(148, 163, 184, 0.20);
+      border-radius: 14px;
+      outline: none;
+      padding: 0 13px;
+      color: var(--text);
+      background: rgba(2, 6, 23, 0.42);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      font: inherit;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    input::placeholder {
+      color: rgba(148, 163, 184, 0.58);
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(56, 189, 248, 0.62);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.10);
+      background: rgba(2, 6, 23, 0.58);
+    }
+
+    input:disabled,
+    select:disabled {
+      opacity: 0.58;
+      cursor: not-allowed;
+    }
+
+    .input-suffix {
+      position: relative;
+    }
+
+    .input-suffix input {
+      padding-right: 76px;
+    }
+
+    .input-suffix span {
+      position: absolute;
+      top: 50%;
+      right: 13px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .range-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.20);
+      border-radius: 14px;
+      padding: 0 15px;
+      color: var(--text);
+      background: rgba(15, 23, 42, 0.62);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.16);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+      user-select: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(30, 41, 59, 0.78);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn.primary {
+      color: #03111f;
+      border-color: transparent;
+      background: linear-gradient(135deg, #67e8f9, #38bdf8 45%, #8b5cf6);
+    }
+
+    .btn.secondary {
+      color: #03131a;
+      border-color: transparent;
+      background: linear-gradient(135deg, #86efac, #22c55e 55%, #14b8a6);
+    }
+
+    .btn.danger {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+    }
+
+    .btn.ghost {
+      background: rgba(15, 23, 42, 0.46);
+    }
+
+    .btn.big {
+      min-width: 150px;
+      min-height: 50px;
+    }
+
+    .btn.small {
+      min-height: 36px;
+      border-radius: 999px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+
+    .hint {
+      margin: 13px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .signal-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .signal-item {
+      padding: 13px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 18px;
+      background: rgba(2, 6, 23, 0.34);
+    }
+
+    .signal-item strong {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .signal-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .signal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .signal-dot.up {
+      color: var(--green);
+      background: var(--green);
+    }
+
+    .signal-dot.down {
+      color: var(--red);
+      background: var(--red);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 18px;
+      background: rgba(2, 6, 23, 0.34);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 6px;
+      color: #f8fafc;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .positive {
+      color: #86efac !important;
+    }
+
+    .negative {
+      color: #fca5a5 !important;
+    }
+
+    .score-panel {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 18px;
+      background: rgba(2, 6, 23, 0.34);
+    }
+
+    .score-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .score-top b {
+      color: #f8fafc;
+      font-size: 16px;
+    }
+
+    .score-meter {
+      height: 13px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .score-meter div {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    .recent-title {
+      margin: 16px 0 9px;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .recent-trades {
+      display: grid;
+      gap: 8px;
+    }
+
+    .trade-row {
+      display: grid;
+      grid-template-columns: 70px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.46);
+    }
+
+    .trade-type {
+      display: inline-flex;
+      justify-content: center;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 950;
+      border: 1px solid currentColor;
+    }
+
+    .trade-type.rise {
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.10);
+    }
+
+    .trade-type.fall {
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.10);
+    }
+
+    .trade-row b {
+      display: block;
+      font-size: 12px;
+    }
+
+    .trade-row small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .trade-row strong {
+      font-size: 13px;
+    }
+
+    .empty {
+      padding: 12px;
+      border: 1px dashed rgba(148, 163, 184, 0.22);
+      border-radius: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .chart-card,
+    .logs-card {
+      grid-column: 1 / -1;
+    }
+
+    .chart-wrap {
+      height: 320px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 20px;
+      background: rgba(2, 6, 23, 0.48);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 12px 0 14px;
+    }
+
+    .chart-legend span:nth-child(2)::before { background: #22c55e; }
+    .chart-legend span:nth-child(3)::before { background: #38bdf8; }
+    .chart-legend span:nth-child(4)::before { background: #f97316; }
+    .chart-legend span:nth-child(5)::before { background: #ef4444; }
+    .chart-legend span:nth-child(6)::before { background: #e0f2fe; }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 390px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .log-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .log-list::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.24);
+    }
+
+    .log-item {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border-left: 3px solid rgba(148, 163, 184, 0.32);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.48);
+    }
+
+    .log-item.success { border-left-color: var(--green); }
+    .log-item.error { border-left-color: var(--red); }
+    .log-item.warn { border-left-color: var(--yellow); }
+    .log-item.buy { border-left-color: var(--primary); }
+
+    .log-time {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .log-item p {
+      margin: 0;
+      color: #dbeafe;
+      font-size: 13px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .footer {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto 34px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-card,
+      .logs-card {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .nav-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      .nav-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .container,
+      .nav-inner,
+      .footer {
+        width: min(100% - 22px, 1220px);
+      }
+
+      .hero-card,
+      .card {
+        padding: 16px;
+        border-radius: 20px;
+      }
+
+      .form-grid,
+      .signal-box,
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .nav-actions .btn {
+        width: auto;
+      }
+
+      .log-item {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-wrap {
+        height: 280px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .range-pair {
+        grid-template-columns: 1fr;
+      }
+
+      .brand span {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-orb orb-one"></div>
+  <div class="bg-orb orb-two"></div>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">⚡</div>
+        <div>
+          <strong>Deriv Speed 100 Bot</strong>
+          <span>SmartTrader · Rise/Fall 5 ticks · API Deriv</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <span id="wsStatus" class="pill neutral"><span class="status-dot"></span>Desconectado</span>
+        <button id="disconnectBtn" class="btn ghost small" type="button">Desconectar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-card">
+        <span class="eyebrow">Automatización para Deriv SmartTrader</span>
+        <h1>Bot Rise/Fall en <span class="gradient-text">Speed 100</span> con ruptura confirmada</h1>
+        <p>
+          El bot no opera al pulsar iniciar. Primero sincroniza ticks, calcula un score 0-100, espera la ruptura de techo/base y solo solicita la compra CALL/PUT cuando la ruptura se mantiene durante <strong>N ticks consecutivos</strong>. Duración predeterminada: <strong>5 ticks</strong>.
+        </p>
+        <div class="hero-badges">
+          <span>Rise rompe techo 93-95</span>
+          <span>Fall rompe base 7-5</span>
+          <span>Confirmación por N ticks</span>
+          <span>Demo y Real con API</span>
+          <span>Stake, TP y SL configurables</span>
+        </div>
+      </div>
+
+      <aside class="hero-card safety">
+        <div class="mode-row">
+          <div class="mode-icon" aria-hidden="true">🛡️</div>
+          <div>
+            <strong>Inicio seguro</strong>
+            <span>Al iniciar, el bot entra en modo análisis y espera la señal. Por defecto no envía órdenes reales.</span>
+          </div>
+        </div>
+
+        <label class="switch-card">
+          <input id="dryRunToggle" type="checkbox" checked />
+          <span class="switch-ui"></span>
+          <span>
+            <b>Modo simulación</b>
+            <small>Registra señales, pero no compra contratos en Deriv.</small>
+          </span>
+        </label>
+
+        <label class="switch-card real">
+          <input id="realTradingToggle" type="checkbox" />
+          <span class="switch-ui"></span>
+          <span>
+            <b>Permitir órdenes reales</b>
+            <small>Solo si tu token Deriv tiene permiso <strong>trade</strong>.</small>
+          </span>
+        </label>
+
+        <p class="disclaimer">
+          Las opciones de ticks son instrumentos de alto riesgo y no garantizan beneficios. Usa primero cuenta demo, limita el stake y activa órdenes reales solo si aceptas el riesgo.
+        </p>
+      </aside>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">1</span>
+            <h2>Cuenta y API</h2>
+          </div>
+          <span id="authPill" class="pill neutral"><span class="status-dot"></span>Sin cuenta</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="appId">App ID de Deriv</label>
+            <input id="appId" type="text" inputmode="numeric" value="1089" placeholder="Ej. 1089" />
+          </div>
+
+          <div class="field">
+            <label for="apiToken">API Token</label>
+            <input id="apiToken" type="password" placeholder="Token con scopes read + trade" autocomplete="off" />
+          </div>
+
+          <div class="field full">
+            <label for="accountSelect">Cuenta sincronizada</label>
+            <select id="accountSelect" disabled>
+              <option value="">Sin conectar</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="balanceDisplay">Balance</label>
+            <input id="balanceDisplay" type="text" readonly value="--" />
+          </div>
+
+          <div class="field">
+            <label for="scopesDisplay">Permisos detectados</label>
+            <input id="scopesDisplay" type="text" readonly value="--" />
+          </div>
+
+          <div class="field full">
+            <label for="accountMeta">Estado de cuenta</label>
+            <input id="accountMeta" type="text" readonly value="Conecta tu cuenta para sincronizar balance, moneda y tipo de cuenta." />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="oauthBtn" class="btn secondary" type="button">Autorizar con OAuth</button>
+          <button id="connectBtn" class="btn primary" type="button">Conectar y sincronizar</button>
+          <button id="refreshSymbolsBtn" class="btn ghost" type="button">Actualizar símbolos</button>
+        </div>
+
+        <p class="hint">
+          El token se usa solo en tu navegador para conectar con Deriv WebSocket. Para operar real, genera un token con permisos <strong>read</strong> y <strong>trade</strong>. OAuth requiere que la URL de redirección esté registrada en tu app de Deriv; si no, usa token manual.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">2</span>
+            <h2>Estrategia</h2>
+          </div>
+          <span id="runPill" class="pill neutral"><span class="status-dot"></span>En espera</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="symbolInput">Símbolo del índice</label>
+            <input id="symbolInput" type="text" list="symbolOptions" value="R_100" placeholder="R_100 / S100 / 1HZ100V" />
+          </div>
+
+          <div class="field">
+            <label for="durationTicks">Duración</label>
+            <div class="input-suffix">
+              <input id="durationTicks" type="number" min="1" max="10" step="1" value="5" />
+              <span>ticks</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="stakeInput">Stake por operación</label>
+            <input id="stakeInput" type="number" min="0.35" step="0.01" value="1" />
+          </div>
+
+          <div class="field">
+            <label for="confirmTicks">Confirmación N ticks</label>
+            <div class="input-suffix">
+              <input id="confirmTicks" type="number" min="1" max="10" step="1" value="2" />
+              <span>ticks</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="upperMin">Techo Rise 93-95</label>
+            <div class="range-pair">
+              <input id="upperMin" type="number" min="0" max="100" step="0.1" value="93" />
+              <input id="upperMax" type="number" min="0" max="100" step="0.1" value="95" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="lowerMax">Base Fall 7-5</label>
+            <div class="range-pair">
+              <input id="lowerMax" type="number" min="0" max="100" step="0.1" value="7" />
+              <input id="lowerMin" type="number" min="0" max="100" step="0.1" value="5" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="lookbackInput">Ventana de score</label>
+            <div class="input-suffix">
+              <input id="lookbackInput" type="number" min="8" max="300" step="1" value="36" />
+              <span>ticks</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cooldownTicks">Cooldown tras operación</label>
+            <div class="input-suffix">
+              <input id="cooldownTicks" type="number" min="0" max="100" step="1" value="3" />
+              <span>ticks</span>
+            </div>
+          </div>
+        </div>
+
+        <datalist id="symbolOptions"></datalist>
+
+        <div class="signal-box">
+          <div class="signal-item">
+            <strong><span class="signal-dot up"></span>Rise / CALL</strong>
+            <p>Entra cuando el score se mantiene en la zona de techo, por defecto desde 93 hasta 95, durante N ticks consecutivos.</p>
+          </div>
+          <div class="signal-item">
+            <strong><span class="signal-dot down"></span>Fall / PUT</strong>
+            <p>Entra cuando el score se mantiene en la zona de base, por defecto desde 7 hasta 5, durante N ticks consecutivos.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">3</span>
+            <h2>Riesgo y control</h2>
+          </div>
+          <span id="riskPill" class="pill neutral"><span class="status-dot"></span>Simulación</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="takeProfit">Ganancia objetivo sesión</label>
+            <input id="takeProfit" type="number" min="0" step="0.01" value="20" />
+          </div>
+
+          <div class="field">
+            <label for="stopLoss">Pérdida máxima sesión</label>
+            <input id="stopLoss" type="number" min="0" step="0.01" value="20" />
+          </div>
+
+          <div class="field">
+            <label for="maxTrades">Máximo operaciones</label>
+            <input id="maxTrades" type="number" min="0" step="1" value="20" />
+          </div>
+
+          <div class="field">
+            <label for="maxConsecutiveLosses">Pérdidas consecutivas máx.</label>
+            <input id="maxConsecutiveLosses" type="number" min="0" step="1" value="3" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="startBtn" class="btn primary big" type="button">Iniciar análisis</button>
+          <button id="stopBtn" class="btn danger big" type="button" disabled>Detener</button>
+          <button id="resetStatsBtn" class="btn ghost" type="button">Reiniciar stats</button>
+        </div>
+
+        <p class="hint">
+          El bot verifica límites antes de cada entrada. Si alcanza TP, SL, máximo de operaciones o pérdidas consecutivas, se detiene automáticamente.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">Monitor</span>
+            <h2>Estado de señales</h2>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <span>Último precio</span>
+            <strong id="lastPriceValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>Score 0-100</span>
+            <strong id="scoreValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>Racha zona</span>
+            <strong id="streakValue">0/2</strong>
+          </div>
+          <div class="metric">
+            <span>Última señal</span>
+            <strong id="lastSignalValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>Cooldown</span>
+            <strong id="cooldownValue">Listo</strong>
+          </div>
+          <div class="metric">
+            <span>PnL sesión</span>
+            <strong id="pnlValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>Operaciones</span>
+            <strong id="tradesValue">0</strong>
+          </div>
+          <div class="metric">
+            <span>Win rate</span>
+            <strong id="winRateValue">--</strong>
+          </div>
+          <div class="metric">
+            <span>Contratos abiertos</span>
+            <strong id="openContractsValue">0</strong>
+          </div>
+        </div>
+
+        <div class="score-panel">
+          <div class="score-top">
+            <span>Score actual</span>
+            <b id="scoreText">--</b>
+          </div>
+          <div class="score-meter">
+            <div id="scoreFill"></div>
+          </div>
+        </div>
+
+        <div class="recent-title">Contratos cerrados</div>
+        <div id="recentTrades" class="recent-trades">
+          <div class="empty">Sin contratos cerrados aún.</div>
+        </div>
+      </section>
+
+      <section class="card chart-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">Gráfico</span>
+            <h2>Score de ruptura</h2>
+          </div>
+        </div>
+
+        <div class="chart-legend">
+          <span>Zona Rise 93-95</span>
+          <span>Techo entrada</span>
+          <span>Techo fuerte</span>
+          <span>Base entrada</span>
+          <span>Base fuerte</span>
+          <span>Score actual</span>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="signalChart" aria-label="Gráfico de score de ruptura"></canvas>
+        </div>
+      </section>
+
+      <section class="card logs-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">Actividad</span>
+            <h2>Registro de eventos</h2>
+          </div>
+        </div>
+        <div id="logs" class="log-list" aria-live="polite"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Este panel es una interfaz de automatización para Deriv API. No garantiza ganancias. Prueba en demo, usa límites estrictos y opera solo con capital que puedas arriesgar.
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+
+      const els = {
+        wsStatus: $("wsStatus"),
+        disconnectBtn: $("disconnectBtn"),
+        dryRunToggle: $("dryRunToggle"),
+        realTradingToggle: $("realTradingToggle"),
+
+        appId: $("appId"),
+        apiToken: $("apiToken"),
+        accountSelect: $("accountSelect"),
+        balanceDisplay: $("balanceDisplay"),
+        scopesDisplay: $("scopesDisplay"),
+        accountMeta: $("accountMeta"),
+        oauthBtn: $("oauthBtn"),
+        connectBtn: $("connectBtn"),
+        refreshSymbolsBtn: $("refreshSymbolsBtn"),
+
+        authPill: $("authPill"),
+        runPill: $("runPill"),
+        riskPill: $("riskPill"),
+
+        symbolInput: $("symbolInput"),
+        symbolOptions: $("symbolOptions"),
+        durationTicks: $("durationTicks"),
+        stakeInput: $("stakeInput"),
+        confirmTicks: $("confirmTicks"),
+        upperMin: $("upperMin"),
+        upperMax: $("upperMax"),
+        lowerMax: $("lowerMax"),
+        lowerMin: $("lowerMin"),
+        lookbackInput: $("lookbackInput"),
+        cooldownTicks: $("cooldownTicks"),
+
+        takeProfit: $("takeProfit"),
+        stopLoss: $("stopLoss"),
+        maxTrades: $("maxTrades"),
+        maxConsecutiveLosses: $("maxConsecutiveLosses"),
+        startBtn: $("startBtn"),
+        stopBtn: $("stopBtn"),
+        resetStatsBtn: $("resetStatsBtn"),
+
+        lastPriceValue: $("lastPriceValue"),
+        scoreValue: $("scoreValue"),
+        streakValue: $("streakValue"),
+        lastSignalValue: $("lastSignalValue"),
+        cooldownValue: $("cooldownValue"),
+        pnlValue: $("pnlValue"),
+        tradesValue: $("tradesValue"),
+        winRateValue: $("winRateValue"),
+        openContractsValue: $("openContractsValue"),
+        scoreText: $("scoreText"),
+        scoreFill: $("scoreFill"),
+        recentTrades: $("recentTrades"),
+
+        chart: $("signalChart"),
+        logs: $("logs")
+      };
+
+      const DEFAULTS = {
+        appId: "1089",
+        symbol: "R_100",
+        durationTicks: 5,
+        stake: 1,
+        confirmTicks: 2,
+        upperMin: 93,
+        upperMax: 95,
+        lowerMax: 7,
+        lowerMin: 5,
+        lookback: 36,
+        cooldownTicks: 3,
+        takeProfit: 20,
+        stopLoss: 20,
+        maxTrades: 20,
+        maxConsecutiveLosses: 3
+      };
+
+      const STORAGE_KEY = "deriv.speed100.bot.settings.v1";
+
+      const state = {
+        ws: null,
+        manualClose: false,
+        reqId: 0,
+        connected: false,
+        authorized: false,
+        subscribed: false,
+
+        token: "",
+        appId: DEFAULTS.appId,
+        user: "",
+        loginid: "",
+        currency: "",
+        scopes: [],
+        accounts: [],
+        currentAccount: null,
+
+        balance: null,
+        startBalance: null,
+
+        running: false,
+        dryRun: true,
+
+        symbol: DEFAULTS.symbol,
+        ticks: [],
+        scores: [],
+        lastTick: null,
+        lastPrice: null,
+        lastScore: null,
+
+        zone: null,
+        streak: 0,
+        cooldownTicks: 0,
+        lastEntryZone: null,
+        lastEntry: null,
+        lastDirection: null,
+
+        pendingProposal: null,
+        lastProposal: null,
+        lastContract: null,
+        lastBuyAt: 0,
+
+        trades: 0,
+        wins: 0,
+        losses: 0,
+        realizedPnl: 0,
+        consecutiveLosses: 0,
+        openContracts: new Map(),
+        closedTrades: [],
+        logs: [],
+
+        startedAt: null,
+        userChangedSymbol: false
+      };
+
+      function init() {
+        loadSettings();
+        parseOAuthHash();
+        seedDatalist();
+        bindEvents();
+        renderLogs();
+        updateUI();
+        drawChart();
+        log("Panel listo. Conecta Deriv o inicia en modo simulación.", "info");
+      }
+
+      function loadSettings() {
+        let saved = {};
+        try {
+          saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {};
+        } catch (_) {
+          saved = {};
+        }
+
+        const map = {
+          appId: "appId",
+          symbol: "symbolInput",
+          durationTicks: "durationTicks",
+          stake: "stakeInput",
+          confirmTicks: "confirmTicks",
+          upperMin: "upperMin",
+          upperMax: "upperMax",
+          lowerMax: "lowerMax",
+          lowerMin: "lowerMin",
+          lookback: "lookbackInput",
+          cooldownTicks: "cooldownTicks",
+          takeProfit: "takeProfit",
+          stopLoss: "stopLoss",
+          maxTrades: "maxTrades",
+          maxConsecutiveLosses: "maxConsecutiveLosses"
+        };
+
+        Object.entries(map).forEach(([key, id]) => {
+          if (saved[key] !== undefined) {
+            els[id].value = saved[key];
+            if (key === "symbol") state.userChangedSymbol = true;
+          }
+        });
+
+        state.dryRun = els.dryRunToggle.checked;
+      }
+
+      function saveSettings() {
+        const settings = readSettings();
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+        } catch (_) {
+          log("No fue posible guardar la configuración en este navegador.", "warn");
+        }
+      }
+
+      function bindEvents() {
+        [
+          els.appId,
+          els.symbolInput,
+          els.durationTicks,
+          els.stakeInput,
+          els.confirmTicks,
+          els.upperMin,
+          els.upperMax,
+          els.lowerMax,
+          els.lowerMin,
+          els.lookbackInput,
+          els.cooldownTicks,
+          els.takeProfit,
+          els.stopLoss,
+          els.maxTrades,
+          els.maxConsecutiveLosses
+        ].forEach((el) => {
+          el.addEventListener("input", () => {
+            if (el === els.symbolInput) state.userChangedSymbol = true;
+            saveSettings();
+          });
+          el.addEventListener("change", () => {
+            if (el === els.symbolInput) {
+              handleSymbolChange();
+            } else {
+              saveSettings();
+            }
+          });
+        });
+
+        els.connectBtn.addEventListener("click", connectDeriv);
+        els.disconnectBtn.addEventListener("click", disconnect);
+        els.oauthBtn.addEventListener("click", openOAuth);
+        els.refreshSymbolsBtn.addEventListener("click", refreshSymbols);
+
+        els.accountSelect.addEventListener("change", switchAccount);
+
+        els.dryRunToggle.addEventListener("change", handleDryRunChange);
+        els.realTradingToggle.addEventListener("change", handleRealTradingChange);
+
+        els.startBtn.addEventListener("click", startBot);
+        els.stopBtn.addEventListener("click", () => stopBot("Detenido por el usuario.", "warn"));
+        els.resetStatsBtn.addEventListener("click", resetStats);
+
+        window.addEventListener("resize", debounce(drawChart, 120));
+        setInterval(ping, 25000);
+      }
+
+      function readSettings() {
+        return {
+          appId: clean(els.appId.value, DEFAULTS.appId),
+          symbol: clean(els.symbolInput.value, DEFAULTS.symbol).toUpperCase(),
+          durationTicks: int(els.durationTicks.value, DEFAULTS.durationTicks),
+          stake: num(els.stakeInput.value, DEFAULTS.stake),
+          confirmTicks: int(els.confirmTicks.value, DEFAULTS.confirmTicks),
+          upperMin: num(els.upperMin.value, DEFAULTS.upperMin),
+          upperMax: num(els.upperMax.value, DEFAULTS.upperMax),
+          lowerMax: num(els.lowerMax.value, DEFAULTS.lowerMax),
+          lowerMin: num(els.lowerMin.value, DEFAULTS.lowerMin),
+          lookback: int(els.lookbackInput.value, DEFAULTS.lookback),
+          cooldownTicks: int(els.cooldownTicks.value, DEFAULTS.cooldownTicks),
+          takeProfit: num(els.takeProfit.value, DEFAULTS.takeProfit),
+          stopLoss: num(els.stopLoss.value, DEFAULTS.stopLoss),
+          maxTrades: int(els.maxTrades.value, DEFAULTS.maxTrades),
+          maxConsecutiveLosses: int(els.maxConsecutiveLosses.value, DEFAULTS.maxConsecutiveLosses)
+        };
+      }
+
+      function getZones(settings = readSettings()) {
+        return {
+          upperEntry: Math.min(settings.upperMin, settings.upperMax),
+          upperStrong: Math.max(settings.upperMin, settings.upperMax),
+          lowerEntry: Math.max(settings.lowerMin, settings.lowerMax),
+          lowerStrong: Math.min(settings.lowerMin, settings.lowerMax)
+        };
+      }
+
+      function connectDeriv() {
+        const settings = readSettings();
+        const token = els.apiToken.value.trim();
+
+        if (!token) {
+          log("Ingresa un API token o usa OAuth antes de conectar.", "warn");
+          return;
+        }
+
+        if (state.ws) {
+          state.manualClose = true;
+          try { state.ws.close(1000, "Reconnect"); } catch (_) {}
+        }
+
+        state.manualClose = false;
+        state.token = token;
+        state.appId = settings.appId;
+
+        const url = `wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(settings.appId)}`;
+        setPill(els.wsStatus, "connecting", "Conectando...");
+        log(`Conectando con app_id ${settings.appId}...`, "info");
+
+        try {
+          state.ws = new WebSocket(url);
+        } catch (err) {
+          log(`No se pudo abrir WebSocket: ${err.message}`, "error");
+          updateUI();
+          return;
+        }
+
+        state.ws.addEventListener("open", () => {
+          state.connected = true;
+          log("WebSocket abierto. Solicitando autorización...", "success");
+          send({ authorize: token });
+        });
+
+        state.ws.addEventListener("message", onMessage);
+
+        state.ws.addEventListener("close", (event) => {
+          state.connected = false;
+          state.subscribed = false;
+          if (!state.manualClose) {
+            log(`WebSocket cerrado por Deriv o por la red. Código ${event.code || "n/d"}.`, "warn");
+          }
+          updateUI();
+        });
+
+        state.ws.addEventListener("error", () => {
+          log("Error de red WebSocket. Verifica app_id, token, internet o CORS del entorno.", "error");
+        });
+
+        updateUI();
+      }
+
+      function disconnect() {
+        state.manualClose = true;
+
+        if (state.ws) {
+          try { state.ws.close(1000, "User disconnect"); } catch (_) {}
+        }
+
+        state.ws = null;
+        state.connected = false;
+        state.authorized = false;
+        state.subscribed = false;
+        state.accounts = [];
+        state.currentAccount = null;
+        state.pendingProposal = null;
+
+        els.accountSelect.innerHTML = '<option value="">Sin cuentas</option>';
+        log("Desconectado de Deriv.", "warn");
+        updateUI();
+      }
+
+      function send(payload) {
+        if (!state.ws || state.ws.readyState !== WebSocket.OPEN) {
+          log("WebSocket no está abierto. Conecta la cuenta primero.", "warn");
+          return null;
+        }
+
+        const req = {
+          ...payload,
+          req_id: ++state.reqId
+        };
+
+        state.ws.send(JSON.stringify(req));
+        return req.req_id;
+      }
+
+      function onMessage(event) {
+        let msg;
+
+        try {
+          msg = JSON.parse(event.data);
+        } catch (_) {
+          log("Respuesta de Deriv no válida o no JSON.", "error");
+          return;
+        }
+
+        if (msg.msg_type === "error") {
+          handleDerivError(msg.error);
+          return;
+        }
+
+        switch (msg.msg_type) {
+          case "authorize":
+            handleAuthorize(msg.authorize);
+            break;
+          case "account_list":
+            handleAccountList(msg.account_list || []);
+            break;
+          case "balance":
+            handleBalance(msg.balance);
+            break;
+          case "switch_account":
+            handleSwitchAccount(msg.switch_account);
+            break;
+          case "active_symbols":
+            handleActiveSymbols(msg.active_symbols || []);
+            break;
+          case "ticks_history":
+            handleTicksHistory(msg);
+            break;
+          case "tick":
+            handleTick(msg.tick);
+            break;
+          case "proposal":
+            handleProposal(msg.proposal);
+            break;
+          case "buy":
+            handleBuy(msg.buy);
+            break;
+          case "proposal_open_contract":
+          case "open_contract":
+            handleOpenContract(msg.proposal_open_contract || msg.open_contract);
+            break;
+          case "ping":
+            break;
+          default:
+            break;
+        }
+      }
+
+      function handleDerivError(error) {
+        const message = `${error && error.code ? error.code + ": " : ""}${error && error.message ? error.message : "Error desconocido"}`;
+        if (/token|authorize|permission|trade|unauthorized/i.test(message)) {
+          state.authorized = false;
+        }
+        log(`Deriv API: ${message}`, "error");
+        updateUI();
+      }
+
+      function handleAuthorize(auth) {
+        state.authorized = true;
+        state.user = auth.email || "";
+        state.loginid = auth.loginid || "";
+        state.currency = auth.currency || "";
+        state.scopes = (auth.scopes || []).map((s) => String(s).toLowerCase());
+
+        const account = state.accounts.find((a) => a.loginid === state.loginid) || {
+          loginid: state.loginid,
+          currency: state.currency,
+          is_virtual: Boolean(auth.is_virtual)
+        };
+        state.currentAccount = account;
+
+        send({ account_list: 1 });
+        send({ balance: 1, subscribe: 1 });
+        send({ active_symbols: "brief", product_type: "basic" });
+        send({ proposal_open_contract: 1, subscribe: 1 });
+
+        log(`Autorizado como ${state.user || state.loginid}${state.currency ? " · " + state.currency : ""}.`, "success");
+
+        if (!state.scopes.includes("trade")) {
+          log("El token no incluye permiso trade. Activa solo modo simulación o genera otro token.", "warn");
+        }
+
+        updateUI();
+      }
+
+      function handleAccountList(accounts) {
+        state.accounts = accounts || [];
+        els.accountSelect.innerHTML = "";
+
+        if (!state.accounts.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "Sin cuentas";
+          els.accountSelect.appendChild(option);
+          updateUI();
+          return;
+        }
+
+        state.accounts.forEach((account) => {
+          const option = document.createElement("option");
+          const type = account.is_virtual ? "Demo" : "Real";
+          option.value = account.loginid;
+          option.textContent = `${account.loginid} · ${type} · ${account.currency || "-"}`;
+          els.accountSelect.appendChild(option);
+        });
+
+        const current = state.accounts.find((a) => a.loginid === state.loginid) || state.accounts[0];
+        els.accountSelect.value = current.loginid;
+        state.currentAccount = current;
+
+        if (current.currency && !state.currency) state.currency = current.currency;
+        updateUI();
+      }
+
+      function handleBalance(balance) {
+        if (!balance) return;
+
+        if (typeof balance.balance === "number") {
+          state.balance = balance.balance;
+        }
+
+        if (balance.currency) {
+          state.currency = balance.currency;
+        }
+
+        if (state.startBalance === null && Number.isFinite(state.balance)) {
+          state.startBalance = state.balance;
+        }
+
+        updateUI();
+      }
+
+      function handleSwitchAccount(sw) {
+        const loginid = sw && sw.loginid;
+        if (!loginid) return;
+
+        state.loginid = loginid;
+        state.startBalance = null;
+        state.currentAccount = state.accounts.find((a) => a.loginid === loginid) || { loginid, is_virtual: false };
+
+        send({ balance: 1, subscribe: 1 });
+        log(`Cuenta cambiada a ${loginid}.`, "info");
+        updateUI();
+      }
+
+      function handleActiveSymbols(symbols) {
+        els.symbolOptions.innerHTML = "";
+
+        symbols.forEach((symbol) => {
+          if (!symbol || !symbol.symbol) return;
+          const option = document.createElement("option");
+          option.value = symbol.symbol;
+          els.symbolOptions.appendChild(option);
+        });
+
+        const preferred = symbols.filter((symbol) => {
+          const label = `${symbol.name || ""} ${symbol.symbol || ""}`.toUpperCase();
+          return /SPEED|S100|R_100|1HZ100V|VOLATILITY 100/.test(label);
+        });
+
+        if (preferred.length && !state.userChangedSymbol) {
+          const match = preferred.find((symbol) => {
+            const label = `${symbol.name || ""} ${symbol.symbol || ""}`.toUpperCase();
+            return /SPEED|S100/.test(label);
+          }) || preferred[0];
+
+          els.symbolInput.value = match.symbol;
+          state.symbol = match.symbol;
+          saveSettings();
+          log(`Símbolo sugerido desde Deriv: ${match.symbol}${match.name ? " · " + match.name : ""}`, "info");
+        }
+
+        log(`Símbolos activos sincronizados: ${symbols.length}.`, "info");
+      }
+
+      function refreshSymbols() {
+        if (!state.authorized) {
+          log("Conecta y autoriza la cuenta antes de actualizar símbolos.", "warn");
+          return;
+        }
+        send({ active_symbols: "brief", product_type: "basic" });
+      }
+
+      function loadHistory() {
+        if (!state.authorized) return;
+
+        const settings = readSettings();
+        const count = clampInt(settings.lookback * 3, 80, 300);
+
+        send({
+          ticks_history: settings.symbol,
+          adjust_start_time: 1,
+          count,
+          end: "latest",
+          style: "ticks"
+        });
+      }
+
+      function subscribeTicks() {
+        if (!state.authorized) return;
+
+        const settings = readSettings();
+
+        if (state.subscribed) {
+          send({ forget_all: "ticks" });
+        }
+
+        state.subscribed = true;
+        send({ ticks: settings.symbol, subscribe: 1 });
+        log(`Ticks suscritos: ${settings.symbol}.`, "info");
+      }
+
+      function handleTicksHistory(msg) {
+        const history = msg.history || msg.ticks_history;
+        if (!history || !Array.isArray(history.prices)) return;
+
+        state.ticks = [];
+        state.scores = [];
+        state.zone = null;
+        state.streak = 0;
+        state.lastEntryZone = null;
+        state.lastScore = null;
+        state.lastPrice = null;
+
+        history.prices.forEach((price, index) => {
+          const epoch = history.times && history.times[index] ? history.times[index] : Math.floor(Date.now() / 1000) - (history.prices.length - index);
+          pushTick({
+            price: Number(price),
+            epoch
+          }, true);
+        });
+
+        log(`Cargadas ${history.prices.length} ticks históricos de ${state.symbol}.`, "info");
+        drawChart();
+        updateUI();
+      }
+
+      function handleTick(tick) {
+        if (!tick || !Number.isFinite(Number(tick.quote))) return;
+
+        pushTick({
+          price: Number(tick.quote),
+          epoch: tick.epoch || Math.floor(Date.now() / 1000)
+        }, false);
+
+        drawChart();
+        updateUI();
+      }
+
+      function pushTick(tick, fromHistory) {
+        if (!Number.isFinite(tick.price)) return;
+
+        const settings = readSettings();
+        state.symbol = settings.symbol;
+        state.lastTick = tick;
+        state.lastPrice = tick.price;
+
+        state.ticks.push(tick);
+        if (state.ticks.length > 700) state.ticks.shift();
+
+        const lookback = clampInt(settings.lookback, 8, 300);
+        const sample = state.ticks.slice(-lookback);
+        const min = Math.min(...sample.map((item) => item.price));
+        const max = Math.max(...sample.map((item) => item.price));
+        const score = max === min ? 50 : clamp(((tick.price - min) / (max - min)) * 100, 0, 100);
+
+        state.lastScore = score;
+        state.scores.push(score);
+        if (state.scores.length > 220) state.scores.shift();
+
+        analyzeSignal(score, tick.price, tick.epoch, fromHistory);
+      }
+
+      function analyzeSignal(score, price, epoch, fromHistory) {
+        const settings = readSettings();
+        const zones = getZones(settings);
+
+        let zone = null;
+        if (score >= zones.upperEntry) zone = "rise";
+        else if (score <= zones.lowerEntry) zone = "fall";
+
+        if (zone && zone === state.zone) {
+          state.streak += 1;
+        } else {
+          state.zone = zone;
+          state.streak = zone ? 1 : 0;
+        }
+
+        if (!fromHistory && state.cooldownTicks > 0) {
+          state.cooldownTicks = Math.max(0, state.cooldownTicks - 1);
+        }
+
+        if (fromHistory || !state.running) {
+          updateUI();
+          return;
+        }
+
+        if (!canTrade()) return;
+        if (state.cooldownTicks > 0) {
+          updateUI();
+          return;
+        }
+
+        if (zone && state.streak >= settings.confirmTicks) {
+          if (!state.lastEntryZone || state.lastEntryZone !== zone) {
+            enterTrade(zone, score, price, epoch, state.streak);
+            state.lastEntryZone = zone;
+            state.cooldownTicks = Math.max(0, Math.round(settings.cooldownTicks));
+          }
+        }
+
+        if (!zone) state.lastEntryZone = null;
+        updateUI();
+      }
+
+      function canTrade() {
+        const settings = readSettings();
+        const pnl = getSessionPnl();
+
+        if (settings.takeProfit > 0 && pnl >= settings.takeProfit) {
+          stopBot(`Meta de ganancia alcanzada: ${formatMoney(pnl)}.`, "success");
+          return false;
+        }
+
+        if (settings.stopLoss > 0 && pnl <= -settings.stopLoss) {
+          stopBot(`Pérdida máxima alcanzada: ${formatMoney(pnl)}.`, "error");
+          return false;
+        }
+
+        if (settings.maxTrades > 0 && state.trades >= settings.maxTrades) {
+          stopBot(`Máximo de operaciones alcanzado: ${settings.maxTrades}.`, "warn");
+          return false;
+        }
+
+        if (settings.maxConsecutiveLosses > 0 && state.consecutiveLosses >= settings.maxConsecutiveLosses) {
+          stopBot(`Máximo de pérdidas consecutivas alcanzado: ${state.consecutiveLosses}.`, "error");
+          return false;
+        }
+
+        return true;
+      }
+
+      function enterTrade(direction, score, price, epoch, streak) {
+        const settings = readSettings();
+        const zones = getZones(settings);
+        const contractType = direction === "rise" ? "CALL" : "PUT";
+        const label = direction === "rise" ? "Rise/CALL" : "Fall/PUT";
+        const condition = direction === "rise"
+          ? `score ${score.toFixed(1)} ≥ ${zones.upperEntry}`
+          : `score ${score.toFixed(1)} ≤ ${zones.lowerEntry}`;
+
+        state.lastDirection = direction;
+        state.lastEntry = {
+          direction,
+          contractType,
+          score,
+          price,
+          epoch,
+          streak,
+          time: Date.now()
+        };
+
+        if (state.pendingProposal) {
+          log("Ya existe una propuesta pendiente; se ignora la nueva señal.", "warn");
+          return;
+        }
+
+        if (state.dryRun || !els.realTradingToggle.checked) {
+          log(`[DRY RUN] ${label} confirmada: ${condition} durante ${streak}/${settings.confirmTicks} ticks. Stake previsto ${formatMoney(settings.stake)}.`, direction === "rise" ? "success" : "error");
+          updateUI();
+          return;
+        }
+
+        if (!state.authorized) {
+          log("No se puede operar real sin cuenta autorizada.", "error");
+          return;
+        }
+
+        if (!getCurrency()) {
+          log("Esperando moneda de cuenta antes de operar.", "warn");
+          return;
+        }
+
+        if (!state.scopes.includes("trade")) {
+          log("Token sin permiso trade. No se envía orden real.", "error");
+          return;
+        }
+
+        state.pendingProposal = {
+          direction,
+          contractType,
+          score,
+          price,
+          epoch,
+          streak,
+          createdAt: Date.now(),
+          settings
+        };
+
+        sendProposal(settings, direction);
+      }
+
+      function sendProposal(settings, direction) {
+        const currency = getCurrency();
+
+        if (!currency) {
+          log("No se detectó moneda de cuenta para solicitar propuesta.", "warn");
+          state.pendingProposal = null;
+          return;
+        }
+
+        const payload = {
+          proposal: 1,
+          amount: settings.stake,
+          basis: "stake",
+          contract_type: direction === "rise" ? "CALL" : "PUT",
+          currency,
+          duration: settings.durationTicks,
+          duration_unit: "t",
+          symbol: settings.symbol
+        };
+
+        send(payload);
+        log(`Solicitando propuesta ${payload.contract_type} · ${settings.durationTicks} ticks · ${settings.symbol}...`, "info");
+      }
+
+      function handleProposal(proposal) {
+        if (!proposal || !state.pendingProposal) return;
+
+        const pending = state.pendingProposal;
+
+        if (!state.running) {
+          state.pendingProposal = null;
+          return;
+        }
+
+        if (Date.now() - pending.createdAt > 3500) {
+          log("La propuesta expiró antes de comprar. Se cancela la operación.", "warn");
+          state.pendingProposal = null;
+          return;
+        }
+
+        if (!isSignalStillValid(pending.direction, pending.settings)) {
+          log("La ruptura dejó de sostenerse antes de comprar. Orden cancelada.", "warn");
+          state.pendingProposal = null;
+          return;
+        }
+
+        if (state.dryRun || !els.realTradingToggle.checked) {
+          state.pendingProposal = null;
+          return;
+        }
+
+        const ask = Number(proposal.ask_price);
+        if (!Number.isFinite(ask) || ask <= 0) {
+          log("Propuesta recibida sin precio válido.", "error");
+          state.pendingProposal = null;
+          return;
+        }
+
+        const params = {
+          amount: pending.settings.stake,
+          basis: "stake",
+          contract_type: pending.contractType,
+          currency: getCurrency(),
+          duration: pending.settings.durationTicks,
+          duration_unit: "t",
+          symbol: pending.settings.symbol
+        };
+
+        const maxPrice = roundUp(ask + 0.00000001, 8);
+        state.lastProposal = proposal;
+
+        send({
+          buy: 1,
+          price: maxPrice,
+          parameters: params
+        });
+
+        log(`Propuesta recibida: ask ${formatMoney(ask)}, payout ${formatMoney(proposal.payout || 0)}. Enviando compra...`, "info");
+        state.pendingProposal = null;
+      }
+
+      function isSignalStillValid(direction, settings) {
+        const zones = getZones(settings);
+
+        if (direction === "rise") {
+          return Number.isFinite(state.lastScore) && state.lastScore >= zones.upperEntry && state.streak >= 1;
+        }
+
+        if (direction === "fall") {
+          return Number.isFinite(state.lastScore) && state.lastScore <= zones.lowerEntry && state.streak >= 1;
+        }
+
+        return false;
+      }
+
+      function handleBuy(buy) {
+        if (!buy) return;
+
+        const settings = readSettings();
+        state.trades += 1;
+        state.lastBuyAt = Date.now();
+        state.lastContract = buy;
+        state.cooldownTicks = Math.max(0, Math.round(settings.cooldownTicks));
+
+        send({ proposal_open_contract: 1, subscribe: 1 });
+
+        const type = buy.contract_type || (state.pendingProposal && state.pendingProposal.contractType) || "Rise/Fall";
+        log(`Compra enviada${buy.contract_id ? " #" + buy.contract_id : ""}: ${type} · stake ${formatMoney(settings.stake)} · precio ${formatNumber(buy.buy_price || 0, 5)}.`, "buy");
+        updateUI();
+      }
+
+      function handleOpenContract(contract) {
+        if (!contract || !contract.contract_id) return;
+
+        const id = String(contract.contract_id);
+        const prev = state.openContracts.get(id);
+        const profitRaw = contract.profit ?? contract.profit_short;
+        const profit = Number.isFinite(Number(profitRaw)) ? Number(profitRaw) : 0;
+        const status = contract.status || (prev && prev.status) || "open";
+        const isClosed = status === "sold" || status === "expired";
+
+        const record = {
+          ...(prev || {}),
+          ...contract,
+          id,
+          profit,
+          status,
+          lastUpdate: Date.now(),
+          closed: Boolean(prev && prev.closed) || isClosed
+        };
+
+        state.openContracts.set(id, record);
+
+        if (isClosed && !(prev && prev.closed)) {
+          const realized = Number.isFinite(profit)
+            ? profit
+            : Number(contract.sell_price || 0) - Number(contract.buy_price || contract.purchase || 0);
+
+          state.realizedPnl += realized;
+
+          if (realized >= 0) state.wins += 1;
+          else state.losses += 1;
+
+          state.consecutiveLosses = realized >= 0 ? 0 : state.consecutiveLosses + 1;
+
+          state.closedTrades.unshift({
+            id,
+            direction: inferDirection(contract),
+            profit: realized,
+            status,
+            time: Date.now()
+          });
+
+          if (state.closedTrades.length > 30) state.closedTrades.pop();
+
+          log(`Contrato #${id} cerrado (${status}): ${formatMoney(realized)}.`, realized >= 0 ? "success" : "error");
+          checkRiskLimits();
+        }
+
+        updateUI();
+      }
+
+      function inferDirection(contract) {
+        const text = `${contract.contract_type || ""} ${contract.longcode || ""}`.toLowerCase();
+
+        if (text.includes("call") || text.includes("rise")) return "rise";
+        if (text.includes("put") || text.includes("fall")) return "fall";
+        return "unknown";
+      }
+
+      function checkRiskLimits() {
+        const settings = readSettings();
+        const pnl = getSessionPnl();
+
+        if (settings.takeProfit > 0 && pnl >= settings.takeProfit) {
+          stopBot(`Meta de ganancia alcanzada: ${formatMoney(pnl)}.`, "success");
+          return;
+        }
+
+        if (settings.stopLoss > 0 && pnl <= -settings.stopLoss) {
+          stopBot(`Pérdida máxima alcanzada: ${formatMoney(pnl)}.`, "error");
+          return;
+        }
+
+        if (settings.maxConsecutiveLosses > 0 && state.consecutiveLosses >= settings.maxConsecutiveLosses) {
+          stopBot(`Máximo de pérdidas consecutivas alcanzado: ${state.consecutiveLosses}.`, "error");
+        }
+      }
+
+      function startBot() {
+        if (els.realTradingToggle.checked && !state.authorized) {
+          log("Para operar real, conecta y autoriza la cuenta primero.", "warn");
+          return;
+        }
+
+        if (els.realTradingToggle.checked && state.scopes.length && !state.scopes.includes("trade")) {
+          log("Token sin permiso trade. No se puede iniciar en modo real.", "error");
+          return;
+        }
+
+        state.running = true;
+        state.startedAt = Date.now();
+        state.lastEntryZone = null;
+
+        if (state.authorized) {
+          loadHistory();
+          subscribeTicks();
+          log("Análisis iniciado. El bot esperará la señal confirmada antes de comprar.", "success");
+        } else {
+          log("Análisis iniciado en modo local. Conecta Deriv para recibir ticks reales.", "warn");
+        }
+
+        updateUI();
+      }
+
+      function stopBot(reason = "Detenido por el usuario.", type = "warn") {
+        state.running = false;
+        state.pendingProposal = null;
+        log(reason, type);
+        updateUI();
+      }
+
+      function resetStats() {
+        state.trades = 0;
+        state.wins = 0;
+        state.losses = 0;
+        state.realizedPnl = 0;
+        state.consecutiveLosses = 0;
+        state.openContracts.clear();
+        state.closedTrades = [];
+        state.lastEntry = null;
+        state.lastContract = null;
+        state.lastProposal = null;
+        state.startBalance = Number.isFinite(state.balance) ? state.balance : null;
+
+        log("Estadísticas reiniciadas.", "info");
+        updateUI();
+      }
+
+      function handleDryRunChange() {
+        if (!els.dryRunToggle.checked) {
+          const ok = confirm("Vas a desactivar la simulación. Esto permite órdenes reales si también activas el interruptor de órdenes reales. ¿Continuar?");
+          if (!ok) {
+            els.dryRunToggle.checked = true;
+            return;
+          }
+          els.realTradingToggle.checked = true;
+          state.dryRun = false;
+          log("Modo simulación desactivado. Revisa permisos y límites antes de operar real.", "warn");
+        } else {
+          els.realTradingToggle.checked = false;
+          state.dryRun = true;
+          log("Modo simulación activado. No se enviarán órdenes a Deriv.", "info");
+        }
+
+        updateUI();
+      }
+
+      function handleRealTradingChange() {
+        if (els.realTradingToggle.checked) {
+          const ok = confirm("¿Activar órdenes reales? El bot podrá comprar contratos CALL/PUT en Deriv cuando la señal sea confirmada. Usa solo capital que puedas arriesgar.");
+          if (!ok) {
+            els.realTradingToggle.checked = false;
+            return;
+          }
+          els.dryRunToggle.checked = false;
+          state.dryRun = false;
+          log("Órdenes reales permitidas. El token debe tener permiso trade.", "warn");
+        } else {
+          els.dryRunToggle.checked = true;
+          state.dryRun = true;
+          log("Órdenes reales bloqueadas. Modo simulación activado.", "info");
+        }
+
+        updateUI();
+      }
+
+      function openOAuth() {
+        const settings = readSettings();
+        const redirect = encodeURIComponent(window.location.href.split("#")[0]);
+        const url = `https://oauth.deriv.com/oauth2/authorize?app_id=${encodeURIComponent(settings.appId)}&l=es&brand=deriv&redirect_uri=${redirect}`;
+
+        log("Abriendo autorización OAuth de Deriv. Si falla la redirección, usa token manual.", "info");
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+
+      function parseOAuthHash() {
+        if (!window.location.hash) return;
+
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const token = params.get("access_token") || params.get("token");
+
+        if (token) {
+          els.apiToken.value = token;
+          window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+          log("Token OAuth importado desde la URL.", "success");
+        }
+      }
+
+      function ping() {
+        if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+          send({ ping: 1 });
+        }
+      }
+
+      function updateUI() {
+        const connected = state.ws && state.ws.readyState === WebSocket.OPEN;
+        const settings = readSettings();
+        const zones = getZones(settings);
+        const pnl = getSessionPnl();
+        const closedTotal = state.wins + state.losses;
+        const openCount = [...state.openContracts.values()].filter((c) => c.status !== "sold" && c.status !== "expired").length;
+
+        setPill(
+          els.wsStatus,
+          connected ? "connected" : state.ws ? "connecting" : "neutral",
+          connected ? "Conectado" : state.ws ? "Conectando" : "Desconectado"
+        );
+
+        const accountType = state.currentAccount && state.currentAccount.is_virtual ? "Demo" : state.authorized ? "Real" : "";
+        setPill(
+          els.authPill,
+          state.authorized ? "connected" : "neutral",
+          state.authorized ? `Autorizado${accountType ? " · " + accountType : ""}` : "Sin cuenta"
+        );
+
+        setPill(
+          els.runPill,
+          state.running ? "running" : "neutral",
+          state.running ? "Analizando" : "En espera"
+        );
+
+        let riskType = state.dryRun ? "neutral" : "danger";
+        let riskText = state.dryRun ? "Simulación" : "Órdenes reales";
+        if (!state.dryRun && state.scopes.length && !state.scopes.includes("trade")) {
+          riskType = "warning";
+          riskText = "Sin permiso trade";
+        }
+        setPill(els.riskPill, riskType, riskText);
+
+        els.accountSelect.disabled = !state.authorized;
+        els.connectBtn.textContent = connected ? "Reconectar" : "Conectar y sincronizar";
+        els.disconnectBtn.disabled = !state.ws;
+        els.startBtn.disabled = state.running || (els.realTradingToggle.checked && !state.authorized);
+        els.stopBtn.disabled = !state.running;
+
+        els.balanceDisplay.value = Number.isFinite(state.balance) ? formatMoney(state.balance) : "--";
+        els.scopesDisplay.value = state.scopes.length ? state.scopes.join(", ") : "--";
+
+        if (!state.authorized) {
+          els.accountMeta.value = "Conecta tu cuenta para sincronizar balance, moneda y tipo de cuenta.";
+        } else {
+          const type = state.currentAccount && state.currentAccount.is_virtual ? "Demo" : "Real";
+          els.accountMeta.value = `${state.user || state.loginid || "Cuenta"} · ${state.currency || "-"} · ${type}`;
+        }
+
+        els.lastPriceValue.textContent = Number.isFinite(state.lastPrice) ? formatPrice(state.lastPrice) : "--";
+        els.scoreValue.textContent = Number.isFinite(state.lastScore) ? state.lastScore.toFixed(1) : "--";
+        els.scoreText.textContent = Number.isFinite(state.lastScore) ? state.lastScore.toFixed(1) : "--";
+
+        const score = Number.isFinite(state.lastScore) ? clamp(state.lastScore, 0, 100) : 0;
+        els.scoreFill.style.width = `${score}%`;
+
+        if (score >= zones.upperEntry) {
+          els.scoreFill.style.background = "linear-gradient(90deg, #22c55e, #86efac)";
+        } else if (score <= zones.lowerEntry) {
+          els.scoreFill.style.background = "linear-gradient(90deg, #ef4444, #f97316)";
+        } else {
+          els.scoreFill.style.background = "linear-gradient(90deg, #38bdf8, #8b5cf6)";
+        }
+
+        const zoneName = state.zone === "rise" ? "techo" : state.zone === "fall" ? "base" : "neutral";
+        els.streakValue.textContent = state.zone ? `${state.streak}/${settings.confirmTicks} ${zoneName}` : `0/${settings.confirmTicks}`;
+
+        if (state.lastEntry) {
+          const time = new Date(state.lastEntry.time).toLocaleTimeString();
+          els.lastSignalValue.textContent = `${state.lastEntry.direction.toUpperCase()} · ${state.lastEntry.score.toFixed(1)} · ${time}`;
+        } else {
+          els.lastSignalValue.textContent = "--";
+        }
+
+        els.cooldownValue.textContent = state.cooldownTicks > 0 ? `${state.cooldownTicks} ticks` : "Listo";
+        els.pnlValue.textContent = Number.isFinite(pnl) ? formatMoney(pnl) : "--";
+        els.pnlValue.className = Number.isFinite(pnl) ? (pnl >= 0 ? "positive" : "negative") : "";
+        els.tradesValue.textContent = String(state.trades);
+        els.winRateValue.textContent = closedTotal ? `${Math.round((state.wins / closedTotal) * 100)}%` : "--";
+        els.openContractsValue.textContent = String(openCount);
+
+        renderRecentTrades();
+        drawChart();
+      }
+
+      function setPill(el, type, text) {
+        el.className = `pill ${type}`;
+        el.innerHTML = "";
+
+        const dot = document.createElement("span");
+        dot.className = "status-dot";
+
+        const span = document.createElement("span");
+        span.textContent = text;
+
+        el.append(dot, span);
+      }
+
+      function renderLogs() {
+        els.logs.innerHTML = state.logs.map((item) => `
+          <div class="log-item ${escapeHtml(item.type)}">
+            <span class="log-time">${escapeHtml(item.time.toLocaleTimeString())}</span>
+            <p>${escapeHtml(item.message)}</p>
+          </div>
+        `).join("");
+      }
+
+      function log(message, type = "info") {
+        state.logs.unshift({
+          time: new Date(),
+          message: String(message),
+          type
+        });
+
+        if (state.logs.length > 120) state.logs.pop();
+        renderLogs();
+      }
+
+      function renderRecentTrades() {
+        if (!state.closedTrades.length) {
+          els.recentTrades.innerHTML = '<div class="empty">Sin contratos cerrados aún.</div>';
+          return;
+        }
+
+        els.recentTrades.innerHTML = state.closedTrades.slice(0, 8).map((trade) => {
+          const typeClass = trade.direction === "rise" ? "rise" : trade.direction === "fall" ? "fall" : "";
+          const typeText = trade.direction === "rise" ? "CALL" : trade.direction === "fall" ? "PUT" : "---";
+          const moneyClass = trade.profit >= 0 ? "positive" : "negative";
+
+          return `
+            <div class="trade-row">
+              <span class="trade-type ${typeClass}">${typeText}</span>
+              <span>
+                <b>#${escapeHtml(trade.id)}</b>
+                <small>${new Date(trade.time).toLocaleTimeString()} · ${escapeHtml(trade.status)}</small>
+              </span>
+              <strong class="${moneyClass}">${formatMoney(trade.profit)}</strong>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function drawChart() {
+        const canvas = els.chart;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const width = Math.max(320, rect.width);
+        const height = Math.max(220, rect.height);
+
+        if (canvas.width !== Math.floor(width * dpr) || canvas.height !== Math.floor(height * dpr)) {
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+        }
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+
+        const bg = ctx.createLinearGradient(0, 0, 0, height);
+        bg.addColorStop(0, "rgba(15, 23, 42, 0.96)");
+        bg.addColorStop(1, "rgba(2, 6, 23, 0.96)");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, width, height);
+
+        const settings = readSettings();
+        const zones = getZones(settings);
+        const yFor = (score) => height - (clamp(score, 0, 100) / 100) * height;
+
+        ctx.fillStyle = "rgba(34, 197, 94, 0.075)";
+        ctx.fillRect(0, 0, width, yFor(zones.upperEntry));
+
+        ctx.fillStyle = "rgba(239, 68, 68, 0.075)";
+        ctx.fillRect(0, yFor(zones.lowerEntry), width, height - yFor(zones.lowerEntry));
+
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.12)";
+        ctx.lineWidth = 1;
+        ctx.font = "12px ui-sans-serif, system-ui";
+        ctx.fillStyle = "rgba(203, 213, 225, 0.58)";
+
+        for (let v = 0; v <= 100; v += 25) {
+          const y = yFor(v);
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+          ctx.fillText(String(v), 10, y - 5);
+        }
+
+        const drawThreshold = (score, label, color) => {
+          const y = yFor(score);
+          ctx.save();
+          ctx.setLineDash([7, 7]);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = color;
+          ctx.fillText(label, Math.max(8, width - 42), y - 7);
+          ctx.restore();
+        };
+
+        drawThreshold(zones.upperStrong, "95", "#38bdf8");
+        drawThreshold(zones.upperEntry, String(zones.upperEntry), "#22c55e");
+        drawThreshold(zones.lowerEntry, String(zones.lowerEntry), "#f97316");
+        drawThreshold(zones.lowerStrong, String(zones.lowerStrong), "#ef4444");
+
+        const scores = state.scores;
+
+        if (scores.length > 1) {
+          ctx.beginPath();
+          scores.forEach((score, index) => {
+            const x = (index / (scores.length - 1)) * width;
+            const y = yFor(score);
+            if (index === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.strokeStyle = "#e0f2fe";
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = "rgba(56, 189, 248, 0.35)";
+          ctx.shadowBlur = 12;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        if (Number.isFinite(state.lastScore)) {
+          const x = width - 18;
+          const y = yFor(state.lastScore);
+          const color = state.lastScore >= zones.upperEntry
+            ? "#22c55e"
+            : state.lastScore <= zones.lowerEntry
+              ? "#ef4444"
+              : "#38bdf8";
+
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 16;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillStyle = "rgba(226, 232, 240, 0.72)";
+        ctx.font = "12px ui-sans-serif, system-ui";
+        ctx.fillText("Score 0-100 · zona alta = posible Rise, zona baja = posible Fall", 14, 22);
+      }
+
+      function seedDatalist() {
+        ["R_100", "S100", "1HZ100V", "R_75", "S75", "1HZ75V"].forEach((symbol) => {
+          const option = document.createElement("option");
+          option.value = symbol;
+          els.symbolOptions.appendChild(option);
+        });
+      }
+
+      function handleSymbolChange() {
+        state.userChangedSymbol = true;
+        saveSettings();
+
+        if (!state.authorized) return;
+
+        state.ticks = [];
+        state.scores = [];
+        state.lastScore = null;
+        state.lastPrice = null;
+        state.zone = null;
+        state.streak = 0;
+        state.lastEntryZone = null;
+
+        send({ forget_all: "ticks" });
+        state.subscribed = false;
+        loadHistory();
+        subscribeTicks();
+      }
+
+      function getCurrency() {
+        return state.currency || (state.currentAccount && state.currentAccount.currency) || "";
+      }
+
+      function getSessionPnl() {
+        if (Number.isFinite(state.balance) && Number.isFinite(state.startBalance)) {
+          return state.balance - state.startBalance;
+        }
+        return state.realizedPnl;
+      }
+
+      function formatMoney(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return "--";
+        const currency = getCurrency();
+        return `${currency ? currency + " " : ""}${n.toFixed(2)}`;
+      }
+
+      function formatNumber(value, digits = 4) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return "--";
+        return n.toLocaleString(undefined, {
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits
+        });
+      }
+
+      function formatPrice(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return "--";
+        if (Math.abs(n) >= 100) return formatNumber(n, 2);
+        if (Math.abs(n) >= 1) return formatNumber(n, 4);
+        return formatNumber(n, 5);
+      }
+
+      function escapeHtml(value) {
+        const map = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        };
+
+        return String(value ?? "").replace(/[&<>"']/g, (char) => map[char]);
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function clampInt(value, min, max) {
+        return Math.round(clamp(int(value, min), min, max));
+      }
+
+      function num(value, fallback) {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : fallback;
+      }
+
+      function int(value, fallback) {
+        const n = parseInt(value, 10);
+        return Number.isFinite(n) ? n : fallback;
+      }
+
+      function clean(value, fallback) {
+        const text = String(value || "").trim();
+        return text || fallback;
+      }
+
+      function roundUp(value, decimals = 8) {
+        const factor = Math.pow(10, decimals);
+        return Math.ceil(value * factor) / factor;
+      }
+
+      function debounce(fn, wait) {
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
